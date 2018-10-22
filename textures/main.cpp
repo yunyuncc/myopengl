@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cmath>
 #include <iostream>
+#include <opencv2/opencv.hpp>
 #include <vector>
 using namespace std;
 // resize window callback
@@ -18,20 +19,40 @@ void processInput(GLFWwindow *window) {
 // three vertices of a triangle in Normalized Device Coordinates
 
 vector<float> vertices = {
-    // 位置              // 颜色
-    0.5f,  -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // 左下
-    0.0f,  0.5f,  0.0f, 0.0f, 0.0f, 1.0f  // 顶部
+    //     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
+    0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, // 右上
+    0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // 右下
+    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, // 左下
+    -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f  // 左上
 };
 vector<unsigned int> indices = {
     // 注意索引从0开始!
     0, 1, 2, // 第一个三角形
-};
-vector<float> texCoords[] = {
+    0, 2, 3};
+vector<float> texCoords = {
     0.0f, 0.0f, // 左下角
     1.0f, 0.0f, // 右下角
-    0.5f, 1.0f // 上中
+    0.5f, 1.0f  // 上中
 };
+
+void setup_texture(const std::string &img_path) {
+  unsigned int texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  cv::Mat img = cv::imread(img_path);
+  cv::Mat img_rgb;
+  cv::cvtColor(img, img_rgb, CV_BGR2RGB);
+  auto width = img.cols;
+  auto height = img.rows;
+  cout << "channels:" << img.channels() << endl;
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, img_rgb.data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
 vector<unsigned int> setup_buffer() {
 
   unsigned int VAO;
@@ -56,21 +77,25 @@ vector<unsigned int> setup_buffer() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(float),
                indices.data(), GL_STATIC_DRAW);
 
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
                         (void *)(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+                        (void *)(6 * sizeof(float)));
+  glEnableVertexAttribArray(2);
   return {EBO};
 }
 
 int main(int argc, char **argv) {
-  if (argc != 3) {
+  if (argc != 4) {
     cout << "usage:" << argv[0] << " vertex.GLSL fragment.GLSL" << endl;
     return 0;
   }
   std::string vertex_path(argv[1]);
   std::string fragment_path(argv[2]);
+  std::string texture_path(argv[3]);
   // init
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -105,6 +130,7 @@ int main(int argc, char **argv) {
   auto t1 = std::chrono::high_resolution_clock::now();
   myopengl::shader shader_(vertex_path, fragment_path);
   auto EBOs = setup_buffer();
+  setup_texture(texture_path);
   // render loop
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
