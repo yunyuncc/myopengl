@@ -1,6 +1,8 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.9)
 PROJECT(myopengl)
-
+SET(CMAKE_CXX_STANDARD 17)
+SET(CMAKE_CXX_COMPILER /usr/bin/g++-8)
+SET(CMAKE_C_COMPILER /usr/bin/gcc-8)
 FIND_PACKAGE(OpenGL REQUIRED)
 FIND_PACKAGE(GLUT REQUIRED)
 FIND_PACKAGE(glfw3 REQUIRED)
@@ -8,7 +10,7 @@ FIND_PACKAGE(GLEW REQUIRED)
 FIND_LIBRARY(freeimage_library freeimage)
 FIND_LIBRARY(freeimage_debug_library freeimage)
 INCLUDE_DIRECTORIES(glad/include/)
-SET(sub_dirs hello-window hello-triangle shaders shaders2)
+SET(sub_dirs hello-window hello-triangle shaders shaders2 shaders3)
 FOREACH(sub_dir ${sub_dirs})
 	SET(glad_src ${CMAKE_CURRENT_LIST_DIR}/glad/src/glad.c)
 	FILE(GLOB SOURCE ${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/*.cpp)
@@ -21,7 +23,7 @@ FOREACH(sub_dir ${sub_dirs})
 	IF(freeimage_debug_library)
 	  TARGET_LINK_LIBRARIES(${sub_dir} PRIVATE debug ${freeimage_debug_library})
 	ENDIF()
-
+	TARGET_LINK_LIBRARIES(${sub_dir} PUBLIC stdc++fs)
 ENDFOREACH()
 
 
