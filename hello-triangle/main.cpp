@@ -1,4 +1,5 @@
-
+#include <vector>
+#include <chrono>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
@@ -14,26 +15,52 @@ void processInput(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
 }
 // three vertices of a triangle in Normalized Device Coordinates
-float vertices[] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f};
-unsigned int deal_triangle_buffer() {
+
+vector<float> vertices = {
+    0.5f, 0.5f, 0.0f,   // 右上角
+    0.5f, -0.5f, 0.0f,  // 右下角
+    -0.5f, -0.5f, 0.0f, // 左下角
+    -0.5f, 0.5f, 0.0f   // 左上角
+};
+vector<unsigned int> indices = { // 注意索引从0开始! 
+    0, 1, 3, // 第一个三角形
+    1, 2, 3  // 第二个三角形
+};
+vector<unsigned int> indices2 = { // 注意索引从0开始! 
+    0, 1, 3 // 第一个三角形
+};
+vector<unsigned int> setup_buffer() {
 
   unsigned int VAO;
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
+  cout << "vao:" << VAO << endl;
+
 
   // create a Vertex Buffer Object VBO
   unsigned int VBO;
   glGenBuffers(1, &VBO);
-
+  cout << "vbo:" << VBO << endl;
   // bind VBO to gl state machine
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   // copy vertices data to VBO
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices,
+  glBufferData(GL_ARRAY_BUFFER, vertices.size()*sizeof(float), vertices.data(),
                GL_STATIC_DRAW); // GL_DYNAMIC_DRAW, GL_STREAM_DRAW
+
+  unsigned int EBO;
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(float), indices.data(), GL_STATIC_DRAW);
+
+  unsigned int EBO2;
+  glGenBuffers(1, &EBO2);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(float), indices2.data(), GL_STATIC_DRAW);
+
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
   glEnableVertexAttribArray(0);
-  return VAO;
+  return {EBO, EBO2};
 }
 
 const char *vertexShaderSource =
@@ -139,9 +166,9 @@ int main() {
   glViewport(0, 0, 800, 600);
   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-  
+  auto t1 = std::chrono::high_resolution_clock::now();
   auto shaderProgram = create_shader_program();
-  auto VAO = deal_triangle_buffer();
+  auto EBOs = setup_buffer();
   // render loop
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
@@ -150,8 +177,22 @@ int main() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(shaderProgram);
-    glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glBindVertexArray(VAO);
+    auto t2 = std::chrono::high_resolution_clock::now();
+    auto dur = std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
+    
+    if(dur % 3 == 0){
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
+    }else if(dur % 3 == 1){
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
+    }else{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[1]);
+    }
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // double buffer
     glfwSwapBuffers(window);
