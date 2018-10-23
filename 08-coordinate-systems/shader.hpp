@@ -2,6 +2,9 @@
 #include <filesystem>
 #include <fstream>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 #include <string>
 namespace myopengl {
@@ -31,15 +34,20 @@ public:
     }
   }
   unsigned int id() const { return id_; }
-  void use() { glUseProgram(id_); }
-  void set_uniform(const std::string &name, bool value) {
+  void use() const { glUseProgram(id_); }
+  void set_uniform(const std::string &name, bool value) const {
     glUniform1i(glGetUniformLocation(id_, name.c_str()), (int)value);
   }
-  void set_uniform(const std::string &name, int value) {
+  void set_uniform(const std::string &name, int value) const {
     glUniform1i(glGetUniformLocation(id_, name.c_str()), value);
   }
-  void set_uniform(const std::string &name, float value) {
+  void set_uniform(const std::string &name, float value) const {
     glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
+  }
+  void set_uniform(const std::string &name, const glm::mat4 &mat) const {
+    int modelLoc = glGetUniformLocation(id_, name.c_str());
+    glUniformMatrix4fv(modelLoc, 1 /*num of matrix*/,
+                       GL_FALSE /*do not transpose*/, glm::value_ptr(mat));
   }
 
 private:
