@@ -30,6 +30,7 @@ public:
           std::string("got a exception when create shader:") + e.what());
     }
   }
+  unsigned int id() { return id_; }
   void use() { glUseProgram(id_); }
   void set_uniform(const std::string &name, bool value) {
     glUniform1i(glGetUniformLocation(id_, name.c_str()), (int)value);

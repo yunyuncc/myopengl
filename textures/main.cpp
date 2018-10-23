@@ -34,24 +34,36 @@ vector<float> texCoords = {
     1.0f, 0.0f, // 右下角
     0.5f, 1.0f  // 上中
 };
+void load_img_to_cur_texture(const std::string &img_path) {
+  cv::Mat img = cv::imread(img_path);
+  cv::Mat img_rgb;
+  cv::cvtColor(img, img_rgb, CV_BGR2RGB);
+  cv::flip(img_rgb, img_rgb, 0);
+  auto width = img.cols;
+  auto height = img.rows;
+  if (img.channels() != 3) {
+    throw std::runtime_error("img should be rgb channels 3");
+  }
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, img_rgb.data);
+  glGenerateMipmap(GL_TEXTURE_2D);
+}
+void setup_texture(const std::string &img_path, const std::string &img_path2) {
+  unsigned int texture1, texture2;
+  glGenTextures(1, &texture1);
+  glActiveTexture(GL_TEXTURE0); /*active texture unit 0, and load img1 to unit 0*/
+  glBindTexture(GL_TEXTURE_2D, texture1);
+  load_img_to_cur_texture(img_path);
 
-void setup_texture(const std::string &img_path) {
-  unsigned int texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
+  glGenTextures(1, &texture2);
+  glActiveTexture(GL_TEXTURE1);/*active texture unit 1, and load img2 to unit 1*/
+  glBindTexture(GL_TEXTURE_2D, texture2);
+  load_img_to_cur_texture(img_path2);
+
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  cv::Mat img = cv::imread(img_path);
-  cv::Mat img_rgb;
-  cv::cvtColor(img, img_rgb, CV_BGR2RGB);
-  auto width = img.cols;
-  auto height = img.rows;
-  cout << "channels:" << img.channels() << endl;
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-               GL_UNSIGNED_BYTE, img_rgb.data);
-  glGenerateMipmap(GL_TEXTURE_2D);
 }
 vector<unsigned int> setup_buffer() {
 
@@ -89,13 +101,15 @@ vector<unsigned int> setup_buffer() {
 }
 
 int main(int argc, char **argv) {
-  if (argc != 4) {
-    cout << "usage:" << argv[0] << " vertex.GLSL fragment.GLSL" << endl;
+  if (argc != 5) {
+    cout << "usage:" << argv[0] << " vertex.GLSL fragment.GLSL img1 img2"
+         << endl;
     return 0;
   }
   std::string vertex_path(argv[1]);
   std::string fragment_path(argv[2]);
   std::string texture_path(argv[3]);
+  std::string texture_path2(argv[4]);
   // init
   glfwInit();
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -127,10 +141,12 @@ int main(int argc, char **argv) {
   std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes
             << std::endl;
 
-  auto t1 = std::chrono::high_resolution_clock::now();
   myopengl::shader shader_(vertex_path, fragment_path);
+  shader_.use();
+  shader_.set_uniform("texture1", 0);
+  shader_.set_uniform("texture2", 1);
   auto EBOs = setup_buffer();
-  setup_texture(texture_path);
+  setup_texture(texture_path, texture_path2);
   // render loop
   while (!glfwWindowShouldClose(window)) {
     processInput(window);
@@ -138,20 +154,13 @@ int main(int argc, char **argv) {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
-    shader_.use();
-    // glBindVertexArray(VAO);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto dur =
-        std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
 
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO[1]);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // double buffer
     glfwSwapBuffers(window);
-
     glfwPollEvents();
   }
   glfwTerminate();
