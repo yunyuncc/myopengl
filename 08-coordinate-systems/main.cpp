@@ -12,7 +12,7 @@ using namespace std;
 const size_t screen_width = 800;
 const size_t screen_height = 600;
 // resize window callback
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *, int width, int height) {
   // update user view
   glViewport(0, 0, width, height);
 }

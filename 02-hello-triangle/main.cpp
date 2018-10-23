@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace std;
 // resize window callback
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *, int width, int height) {
   // update user view
   glViewport(0, 0, width, height);
 }

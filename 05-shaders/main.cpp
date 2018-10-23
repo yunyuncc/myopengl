@@ -6,7 +6,7 @@
 #include <vector>
 using namespace std;
 // resize window callback
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+void framebuffer_size_callback(GLFWwindow *, int width, int height) {
   // update user view
   glViewport(0, 0, width, height);
 }
@@ -97,7 +97,6 @@ int main(int argc, char **argv) {
   std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes
             << std::endl;
 
-  auto t1 = std::chrono::high_resolution_clock::now();
   myopengl::shader shader_(vertex_path, fragment_path);
   auto EBOs = setup_buffer();
   // render loop
@@ -109,9 +108,6 @@ int main(int argc, char **argv) {
 
     shader_.use();
     // glBindVertexArray(VAO);
-    auto t2 = std::chrono::high_resolution_clock::now();
-    auto dur =
-        std::chrono::duration_cast<std::chrono::seconds>(t2 - t1).count();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
 
