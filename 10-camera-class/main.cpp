@@ -173,25 +173,6 @@ vector<unsigned int> setup_buffer() {
   return {EBO};
 }
 
-void setup_coordinate(const myopengl::shader &shader_) {
-  glm::mat4 model(1.0f);
-  model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f),
-                      glm::vec3(0.5f, 1.0f, 0.0f));
-
-  glm::mat4 view(1.0f);
-  // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
-  // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-  view = get_camera().get_view();
-
-  glm::mat4 projection(1.0f);
-  projection = glm::perspective(
-      glm::radians(get_camera().get_zoom()),
-      screen_width / static_cast<float>(screen_height), 0.1f, 100.0f);
-
-  shader_.set_uniform("model", model);
-  shader_.set_uniform("view", view);
-  shader_.set_uniform("projection", projection);
-}
 void update_projection(const myopengl::shader &shader_) {
   glm::mat4 projection(1.0f);
   projection = glm::perspective(
@@ -224,6 +205,49 @@ std::vector<glm::vec3> &get_cubes() {
       glm::vec3(1.5f, 0.2f, -1.5f),   glm::vec3(-1.3f, 1.0f, -1.5f)};
   return cubes_pos;
 }
+
+GLFWwindow *init() {
+  glfwInit();
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  // create window
+  GLFWwindow *window = glfwCreateWindow(screen_width, screen_height,
+                                        "LearnOpenGL", nullptr, nullptr);
+  if (window == nullptr) {
+    std::cout << "Failed to create GLFW window" << std::endl;
+    glfwTerminate();
+  }
+  glfwMakeContextCurrent(window);
+
+  // init glad
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    std::cout << "Failed to initialize GLAD" << std::endl;
+    glfwTerminate();
+  }
+
+  glEnable(GL_DEPTH_TEST);
+  // init user view
+  glViewport(0, 0, screen_width, screen_height);
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glfwSetCursorPosCallback(window, mouse_callback);
+  glfwSetScrollCallback(window, scroll_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  return window;
+}
+void draw_models(const myopengl::shader &shader_) {
+  size_t max_size = get_cubes().size();
+  for (size_t i = 0; i < max_size; i++) {
+    glm::mat4 model(1.0f);
+    model = glm::translate(model, get_cubes()[i]);
+    float angle = 20.0f * i;
+    model =
+        glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+    shader_.set_uniform("model", model);
+    glDrawArrays(GL_TRIANGLES, 0, 36);
+  }
+}
 int main(int argc, char **argv) {
   if (argc != 5) {
     cout << "usage:" << argv[0] << " vertex.GLSL fragment.GLSL img1 img2"
@@ -235,33 +259,7 @@ int main(int argc, char **argv) {
   std::string texture_path(argv[3]);
   std::string texture_path2(argv[4]);
   // init
-  glfwInit();
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  // create window
-  GLFWwindow *window = glfwCreateWindow(screen_width, screen_height,
-                                        "LearnOpenGL", nullptr, nullptr);
-  if (window == nullptr) {
-    std::cout << "Failed to create GLFW window" << std::endl;
-    glfwTerminate();
-    return -1;
-  }
-  glfwMakeContextCurrent(window);
-
-  // init glad
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    std::cout << "Failed to initialize GLAD" << std::endl;
-    return -1;
-  }
-
-  glEnable(GL_DEPTH_TEST);
-  // init user view
-  glViewport(0, 0, screen_width, screen_height);
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  glfwSetCursorPosCallback(window, mouse_callback);
-  glfwSetScrollCallback(window, scroll_callback);
-  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  auto window = init();
   int nrAttributes;
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
   std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes
@@ -272,7 +270,6 @@ int main(int argc, char **argv) {
   shader_.set_uniform("texture1", 0);
   shader_.set_uniform("texture2", 1);
   auto EBOs = setup_buffer();
-
   setup_texture(texture_path, texture_path2);
 
   // render loop
@@ -285,27 +282,10 @@ int main(int argc, char **argv) {
     // do render
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    setup_coordinate(shader_);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
-    size_t max_size = get_cubes().size();
+
     update_camera_view(shader_);
     update_projection(shader_);
-    for (size_t i = 0; i < max_size; i++) {
-      glm::mat4 model(1.0f);
-      model = glm::translate(model, get_cubes()[i]);
-      float angle = 20.0f * i;
-      model =
-          glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-      shader_.set_uniform("model", model);
-
-      glDrawArrays(GL_TRIANGLES, 0, 36);
-    }
-
-    // draw by index
-    // glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-    // draw by buffer
-    // glDrawArrays(GL_TRIANGLES, 0, 36);
+    draw_models(shader_);
 
     // double buffer
     glfwSwapBuffers(window);
