@@ -1,4 +1,6 @@
+#include "camera.hpp"
 #include "shader.hpp"
+#include "util.hpp"
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <cmath>
@@ -17,16 +19,22 @@ void framebuffer_size_callback(GLFWwindow *, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-glm::vec3 camera_pos(0.f, 0.f, 3.f);
-glm::vec3 camera_front(0.f, 0.f, -1.f);
-glm::vec3 camera_up(0.f, 1.f, 0.f);
+myopengl::camera &get_camera() {
 
+  static glm::vec3 camera_pos(0.f, 0.f, 3.f);
+  static glm::vec3 camera_up(0.f, 1.f, 0.f);
+  static myopengl::camera::config cfg{.yaw = -90.f,
+                                      .pitch = 0.f,
+                                      .speed = 2.5f,
+                                      .sensitivity = 0.1f,
+                                      .zoom = 45.f};
+  static myopengl::camera c(camera_pos, camera_up, cfg);
+  return c;
+}
 float deltaTime = 0.0f; // 当前帧与上一帧的时间差
 float lastFrame = 0.0f; // 上一帧的时间
 
 float lastX = 400, lastY = 300;
-float yaw = 0, pitch = 0;
-float fov = 45.f;
 
 bool firstMouse = true;
 void mouse_callback(GLFWwindow *, double xpos, double ypos) {
@@ -40,34 +48,15 @@ void mouse_callback(GLFWwindow *, double xpos, double ypos) {
 
   float xoffset = xpos - lastX;
   float yoffset =
-      lastY - ypos; // 注意这里是相反的，因为y坐标是从底部往顶部依次增大的
+      -1 *
+      (ypos - lastY); // 注意这里是相反的，因为y坐标是从底部往顶部依次增大的
   lastX = xpos;
   lastY = ypos;
-
-  float sensitivity = 0.05f;
-  xoffset *= sensitivity;
-  yoffset *= sensitivity;
-  yaw += xoffset;
-  pitch += yoffset;
-  if (pitch > 89.0f)
-    pitch = 89.0f;
-  if (pitch < -89.0f)
-    pitch = -89.0f;
-
-  glm::vec3 front;
-  front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-  front.y = sin(glm::radians(pitch));
-  front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-  camera_front = glm::normalize(front);
+  get_camera().deal_mouse_move(xoffset, yoffset);
 }
 
 void scroll_callback(GLFWwindow *, double /* xoffset*/, double yoffset) {
-  if (fov >= 1.0f && fov <= 45.0f)
-    fov -= yoffset;
-  if (fov <= 1.0f)
-    fov = 1.0f;
-  if (fov >= 45.0f)
-    fov = 45.0f;
+  get_camera().deal_mouse_scroll(yoffset);
 }
 
 // deal esc
@@ -75,17 +64,17 @@ void processInput(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 
-  float cameraSpeed = 2.5f * deltaTime;
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    camera_pos += cameraSpeed * camera_front;
+    get_camera().deal_keyboard(myopengl::camera::move::forward, deltaTime);
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    camera_pos -= cameraSpeed * camera_front;
+    get_camera().deal_keyboard(myopengl::camera::move::back, deltaTime);
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    camera_pos -=
-        glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+    get_camera().deal_keyboard(myopengl::camera::move::left, deltaTime);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    camera_pos +=
-        glm::normalize(glm::cross(camera_front, camera_up)) * cameraSpeed;
+    get_camera().deal_keyboard(myopengl::camera::move::right, deltaTime);
+  if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+    cout << "pos:" << myopengl::to_string(get_camera().get_pos())
+         << "  front:" << myopengl::to_string(get_camera().get_front()) << endl;
 }
 // three vertices of a triangle in Normalized Device Coordinates
 
@@ -191,12 +180,13 @@ void setup_coordinate(const myopengl::shader &shader_) {
 
   glm::mat4 view(1.0f);
   // 注意，我们将矩阵向我们要进行移动场景的反方向移动。
-  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+  // view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+  view = get_camera().get_view();
 
   glm::mat4 projection(1.0f);
   projection = glm::perspective(
-      glm::radians(fov), screen_width / static_cast<float>(screen_height), 0.1f,
-      100.0f);
+      glm::radians(get_camera().get_zoom()),
+      screen_width / static_cast<float>(screen_height), 0.1f, 100.0f);
 
   shader_.set_uniform("model", model);
   shader_.set_uniform("view", view);
@@ -205,8 +195,8 @@ void setup_coordinate(const myopengl::shader &shader_) {
 void update_projection(const myopengl::shader &shader_) {
   glm::mat4 projection(1.0f);
   projection = glm::perspective(
-      glm::radians(fov), screen_width / static_cast<float>(screen_height), 0.1f,
-      100.0f);
+      glm::radians(get_camera().get_zoom()),
+      screen_width / static_cast<float>(screen_height), 0.1f, 100.0f);
 
   shader_.set_uniform("projection", projection);
 }
@@ -221,9 +211,8 @@ void update_view(const myopengl::shader &shader_) {
 
   shader_.set_uniform("view", view);
 }
-void update_view2(const myopengl::shader &shader_) {
-  glm::mat4 view =
-      glm::lookAt(camera_pos, camera_pos + camera_front, camera_up);
+void update_camera_view(const myopengl::shader &shader_) {
+  glm::mat4 view = get_camera().get_view();
   shader_.set_uniform("view", view);
 }
 std::vector<glm::vec3> &get_cubes() {
@@ -300,7 +289,7 @@ int main(int argc, char **argv) {
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBOs[0]);
     size_t max_size = get_cubes().size();
-    update_view2(shader_);
+    update_camera_view(shader_);
     update_projection(shader_);
     for (size_t i = 0; i < max_size; i++) {
       glm::mat4 model(1.0f);
