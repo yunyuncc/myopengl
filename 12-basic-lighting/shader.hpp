@@ -1,4 +1,5 @@
 #pragma once
+#include "util.hpp"
 #include <filesystem>
 #include <fstream>
 #include <glad/glad.h>
@@ -33,27 +34,66 @@ public:
           std::string("got a exception when create shader:") + e.what());
     }
   }
+  ~shader() {
+    //  	glDeleteProgram(id_);
+  }
   unsigned int id() const { return id_; }
-  void use() const { glUseProgram(id_); }
+  void use() const {
+    glUseProgram(id_);
+    auto error_opt = glCheckError();
+    if (error_opt) {
+      throw std::runtime_error(std::string("use shader fail:") +
+                               error_opt.value());
+    }
+  }
   void set_uniform(const std::string &name, bool value) const {
-    glUniform1i(glGetUniformLocation(id_, name.c_str()), (int)value);
+    int loc = glGetUniformLocation(id_, name.c_str());
+    if (loc == -1) {
+      throw std::runtime_error(std::string("has not uniform name:") + name);
+    }
+    glUniform1i(loc, (int)value);
+    glCheckError();
   }
   void set_uniform(const std::string &name, int value) const {
-    glUniform1i(glGetUniformLocation(id_, name.c_str()), value);
+    int loc = glGetUniformLocation(id_, name.c_str());
+    if (loc == -1) {
+      throw std::runtime_error(std::string("has not uniform name:") + name);
+    }
+    glUniform1i(loc, value);
+    glCheckError();
   }
   void set_uniform(const std::string &name, float value) const {
-    glUniform1f(glGetUniformLocation(id_, name.c_str()), value);
+    int loc = glGetUniformLocation(id_, name.c_str());
+    if (loc == -1) {
+      throw std::runtime_error(std::string("has not uniform name:") + name);
+    }
+    glUniform1f(loc, value);
+    glCheckError();
   }
   void set_uniform(const std::string &name, const glm::mat4 &mat) const {
-    int modelLoc = glGetUniformLocation(id_, name.c_str());
-    glUniformMatrix4fv(modelLoc, 1 /*num of matrix*/,
-                       GL_FALSE /*do not transpose*/, glm::value_ptr(mat));
+    int loc = glGetUniformLocation(id_, name.c_str());
+    if (loc == -1) {
+      throw std::runtime_error(std::string("has not uniform name:") + name);
+    }
+    glUniformMatrix4fv(loc, 1 /*num of matrix*/, GL_FALSE /*do not transpose*/,
+                       glm::value_ptr(mat));
+    glCheckError();
   }
   void set_uniform(const std::string &name, const glm::vec3 &vec) const {
-    glUniform3fv(glGetUniformLocation(id_, name.c_str()), 1, &vec[0]);
+    int loc = glGetUniformLocation(id_, name.c_str());
+    if (loc == -1) {
+      throw std::runtime_error(std::string("has not uniform name:") + name);
+    }
+    glUniform3fv(loc, 1, &vec[0]);
+    glCheckError();
   }
   void set_uniform(const std::string &name, float x, float y, float z) const {
-    glUniform3f(glGetUniformLocation(id_, name.c_str()), x, y, z);
+    int loc = glGetUniformLocation(id_, name.c_str());
+    if (loc == -1) {
+      throw std::runtime_error(std::string("has not uniform name:") + name);
+    }
+    glUniform3f(loc, x, y, z);
+    glCheckError();
   }
 
 private:
@@ -86,6 +126,9 @@ private:
 
     // 着色器程序
     id_ = glCreateProgram();
+    if (id_ == 0) {
+      throw std::runtime_error("glCreateProgram fail");
+    }
 
     glAttachShader(id_, vertex);
     glAttachShader(id_, fragment);

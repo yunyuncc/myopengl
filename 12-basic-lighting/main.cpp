@@ -127,7 +127,6 @@ vector<float> vertices = {
 
 vector<unsigned int> setup_buffer() {
   // create a Vertex Buffer Object VBO
-  unsigned int cubeVAO;
   unsigned int VBO;
   glGenBuffers(1, &VBO);
   cout << "vbo:" << VBO << endl;
@@ -138,6 +137,7 @@ vector<unsigned int> setup_buffer() {
                vertices.data(),
                GL_STATIC_DRAW); // GL_DYNAMIC_DRAW, GL_STREAM_DRAW
 
+  unsigned int cubeVAO;
   glGenVertexArrays(1, &cubeVAO);
   glBindVertexArray(cubeVAO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -249,11 +249,7 @@ int main(/*int argc, char **argv*/) {
     lightingShader.set_uniform("objectColor", 1.0f, 0.5f, 0.31f);
     lightingShader.set_uniform("lightColor", 1.0f, 1.0f, 1.0f);
     lightingShader.set_uniform("lightPos", lightPos);
-    cout << "light pos:" << lightPos.x << "," << lightPos.y << "," << lightPos.z
-         << endl;
     auto viewPos = get_camera().get_pos();
-    cout << "view pos:" << viewPos.x << "," << viewPos.y << "," << viewPos.z
-         << endl;
     lightingShader.set_uniform("viewPos", viewPos);
     update_camera_view(lightingShader);
     update_projection(lightingShader);
