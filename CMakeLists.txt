@@ -14,7 +14,21 @@ FIND_LIBRARY(freeimage_library freeimage)
 FIND_LIBRARY(freeimage_debug_library freeimage)
 INCLUDE_DIRECTORIES(glad/include/)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_LIST_DIR}/include/)
-SET(sub_dirs 01-hello-window 02-hello-triangle 03-shaders 04-shaders 05-shaders 06-textures 07-transformations 08-coordinate-systems 09-camera 10-camera-class 11-color 12-basic-lighting 13-materials)
+SET(sub_dirs 
+	01-hello-window 
+	02-hello-triangle 
+	03-shaders 
+	04-shaders 
+	05-shaders 
+	06-textures 
+	07-transformations 
+	08-coordinate-systems 
+	09-camera 
+	10-camera-class 
+	11-color 
+	12-basic-lighting 
+	13-materials
+	14-lighting-maps)
 FOREACH(sub_dir ${sub_dirs})
 	SET(glad_src ${CMAKE_CURRENT_LIST_DIR}/glad/src/glad.c)
 	FILE(GLOB SOURCE ${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/*.cpp)
