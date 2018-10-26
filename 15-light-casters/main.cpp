@@ -261,10 +261,7 @@ int main(/*int argc, char **argv*/) {
   glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
   std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes
             << std::endl;
-
   auto VAOs = setup_buffer();
-  // setup_texture(texture_path, texture_path2);
-
   myopengl::shader lightingShader("../15-light-casters/basic_lighting.vs",
                                   "../15-light-casters/basic_lighting.fs");
   myopengl::shader lampShader("../15-light-casters/lamp.vs",
@@ -285,11 +282,8 @@ int main(/*int argc, char **argv*/) {
     // do render
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
     // draw cube
-
     lightingShader.use();
-
     lightingShader.set_uniform("light.position", lightPos);
     // lightingShader.set_uniform("light.direction", -0.2f, -1.0f, -0.3f);
     lightingShader.set_uniform("light.constant", 1.0f);
@@ -300,8 +294,7 @@ int main(/*int argc, char **argv*/) {
     lightingShader.set_uniform("light.diffuse", 0.5f, 0.5f,
                                0.5f); // 将光照调暗了一些以搭配场景
     lightingShader.set_uniform("light.specular", 1.0f, 1.0f, 1.0f);
-    auto viewPos = get_camera().get_pos();
-    lightingShader.set_uniform("viewPos", viewPos);
+    lightingShader.set_uniform("viewPos", get_camera().get_pos());
     update_camera_view(lightingShader);
     update_projection(lightingShader);
     glBindVertexArray(VAOs[0]);

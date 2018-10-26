@@ -28,7 +28,9 @@ SET(sub_dirs
 	11-color 
 	12-basic-lighting 
 	13-materials
-	14-lighting-maps)
+	14-lighting-maps
+	15-light-casters 
+	)
 FOREACH(sub_dir ${sub_dirs})
 	SET(glad_src ${CMAKE_CURRENT_LIST_DIR}/glad/src/glad.c)
 	FILE(GLOB SOURCE ${CMAKE_CURRENT_LIST_DIR}/${sub_dir}/*.cpp)
