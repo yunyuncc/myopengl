@@ -255,18 +255,12 @@ unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
 }
 
 int main(/*int argc, char **argv*/) {
-  // init
   auto window = init();
-  int nrAttributes;
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &nrAttributes);
-  std::cout << "Maximum nr of vertex attributes supported: " << nrAttributes
-            << std::endl;
   auto VAOs = setup_buffer();
   myopengl::shader lightingShader("../15-light-casters/basic_lighting.vs",
                                   "../15-light-casters/basic_lighting.fs");
   myopengl::shader lampShader("../15-light-casters/lamp.vs",
                               "../15-light-casters/lamp.fs");
-  // lamp_shader.use();
   // render loop
   load_texture("../img/container2.png", GL_TEXTURE0);
   load_texture("../img/container2_specular.png", GL_TEXTURE1);
@@ -284,11 +278,12 @@ int main(/*int argc, char **argv*/) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // draw cube
     lightingShader.use();
-    lightingShader.set_uniform("light.position", lightPos);
-    // lightingShader.set_uniform("light.direction", -0.2f, -1.0f, -0.3f);
+    lightingShader.set_uniform("light.position", get_camera().get_pos());
+    lightingShader.set_uniform("light.direction", get_camera().get_front());
     lightingShader.set_uniform("light.constant", 1.0f);
     lightingShader.set_uniform("light.linear", 0.09f);
     lightingShader.set_uniform("light.quadratic", 0.032f);
+    lightingShader.set_uniform("light.cutOff", glm::cos(glm::radians(12.5f)));
     lightingShader.set_uniform("material.shininess", 64.0f);
     lightingShader.set_uniform("light.ambient", 0.2f, 0.2f, 0.2f);
     lightingShader.set_uniform("light.diffuse", 0.5f, 0.5f,
@@ -305,12 +300,10 @@ int main(/*int argc, char **argv*/) {
     update_projection(lampShader);
     glBindVertexArray(VAOs[1]);
     set_light_model_and_draw(lampShader);
-
     // double buffer
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
   glfwTerminate();
-
   return 0;
 }

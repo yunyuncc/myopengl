@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 #include <string>
+#include <iostream>
 namespace myopengl {
 class shader {
 public:
@@ -100,6 +101,7 @@ private:
   void create_shader() {
     int success{};
     char infoLog[512]{};
+    const char* info = infoLog;
     const char *vShaderCode = vertex_code_.c_str();
     const char *fShaderCode = fragment_code_.c_str();
     // 顶点着色器
@@ -110,8 +112,9 @@ private:
     glGetShaderiv(vertex, GL_COMPILE_STATUS, &success);
     if (!success) {
       glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
+      std::cerr << "[" << infoLog << "]" << std::endl;
       throw std::runtime_error(std::string("compilation vertex fail:") +
-                               std::string(infoLog));
+                               std::string(info));
     };
 
     unsigned int fragment = glCreateShader(GL_FRAGMENT_SHADER);
@@ -120,6 +123,7 @@ private:
     glGetShaderiv(fragment, GL_COMPILE_STATUS, &success);
     if (!success) {
       glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
+      std::cerr << "[" << infoLog << "]" << std::endl;
       throw std::runtime_error(std::string("compilation fragment fail:") +
                                std::string(infoLog));
     };
@@ -137,6 +141,7 @@ private:
     glGetProgramiv(id_, GL_LINK_STATUS, &success);
     if (!success) {
       glGetProgramInfoLog(id_, 512, nullptr, infoLog);
+      std::cerr << "[" << infoLog << "]" << std::endl;
       throw std::runtime_error(std::string("link shader fail:") +
                                std::string(infoLog));
     }
