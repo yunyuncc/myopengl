@@ -185,12 +185,11 @@ GLFWwindow *init() {
     std::cout << "Failed to initialize GLAD" << std::endl;
     glfwTerminate();
   }
-
   glEnable(GL_DEPTH_TEST);
-  // glDepthMask(GL_FALSE);//make depth buffer readonly
   glDepthFunc(GL_LESS);
-
   glEnable(GL_STENCIL_TEST);
+  glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+  glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
   // init user view
   glViewport(0, 0, screen_width, screen_height);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -200,14 +199,17 @@ void set_floor_model_and_draw(const myopengl::shader &light_shader_) {
   light_shader_.set_uniform("model", glm::mat4(1.0f));
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
-void set_cube_model_and_draw(const myopengl::shader &cube_shader_) {
+void set_cube_model_and_draw(const myopengl::shader &cube_shader_,
+                             float scale) {
   static vector<glm::vec3> cubePositions{glm::vec3(-1.0f, 0.0f, -1.0f),
                                          glm::vec3(2.0f, 0.0f, 0.0f)};
   for (size_t i = 0; i < cubePositions.size(); i++) {
     glm::mat4 model(1.0f);
     model = glm::translate(model, cubePositions[i]);
+    if (scale != 1.0f) {
+      model = glm::scale(model, glm::vec3(scale, scale, scale));
+    }
     cube_shader_.set_uniform("model", model);
-
     glDrawArrays(GL_TRIANGLES, 0, 36);
   }
 }
@@ -241,34 +243,63 @@ unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
 int main(/*int argc, char **argv*/) {
   auto window = init();
   auto VAOs = setup_buffer();
-  myopengl::shader lightingShader("../18-stencil-testing/depth_testing.vs",
-                                  "../18-stencil-testing/depth_testing.fs");
+  myopengl::shader shader_("../18-stencil-testing/depth_testing.vs",
+                           "../18-stencil-testing/depth_testing.fs");
+  myopengl::shader single_color_shader(
+      "../18-stencil-testing/depth_testing.vs",
+      "../18-stencil-testing/depth_testing_single_color.fs");
   // render loop
 
   auto cubeTexture = load_texture("../img/marble.jpg", GL_TEXTURE0);
   auto floorTexture = load_texture("../img/metal.png", GL_TEXTURE0);
-  lightingShader.use();
-  lightingShader.set_uniform("texture1", 0 /*use texture unit 0*/);
+  shader_.use();
+  shader_.set_uniform("texture1", 0 /*use texture unit 0*/);
   while (!glfwWindowShouldClose(window)) {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
 
     processInput(window);
+
+    shader_.use();
+    update_camera_view(shader_);
+    update_projection(shader_);
+    single_color_shader.use();
+    update_camera_view(single_color_shader);
+    update_projection(single_color_shader);
+
+    glEnable(GL_DEPTH_TEST);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     // do render
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-    // draw cube
-    lightingShader.use();
-    update_camera_view(lightingShader);
-    update_projection(lightingShader);
-    glBindTexture(GL_TEXTURE_2D, cubeTexture);
-    glBindVertexArray(VAOs[0]);
-    set_cube_model_and_draw(lightingShader);
 
+    glStencilMask(0x00); // 记得保证我们在绘制地板的时候不会更新模板缓冲
+    // draw floar
+    shader_.use();
     glBindTexture(GL_TEXTURE_2D, floorTexture);
     glBindVertexArray(VAOs[1]);
-    set_floor_model_and_draw(lightingShader);
+    set_floor_model_and_draw(shader_);
+
+    glStencilFunc(GL_ALWAYS, 1, 0xFF);
+    glStencilMask(0xFF);
+    // draw cube
+    shader_.use();
+    glBindTexture(GL_TEXTURE_2D, cubeTexture);
+    glBindVertexArray(VAOs[0]);
+    set_cube_model_and_draw(shader_, 1.0f);
+
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilMask(0x00);
+    glDisable(GL_DEPTH_TEST);
+
+    single_color_shader.use();
+    glBindTexture(GL_TEXTURE_2D, cubeTexture);
+    glBindVertexArray(VAOs[0]);
+    set_cube_model_and_draw(single_color_shader, 1.1f);
+    glStencilMask(0xFF);
+    glEnable(GL_DEPTH_TEST);
+
     // double buffer
     glfwSwapBuffers(window);
     glfwPollEvents();
