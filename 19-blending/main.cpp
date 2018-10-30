@@ -8,8 +8,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include <map>
 #include <opencv2/opencv.hpp>
 #include <vector>
+
 using namespace std;
 const size_t screen_width = 1280;
 const size_t screen_height = 720;
@@ -215,6 +217,8 @@ GLFWwindow *init() {
   }
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   // init user view
   glViewport(0, 0, screen_width, screen_height);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -227,9 +231,14 @@ void set_floor_model_and_draw(const myopengl::shader &light_shader_) {
 }
 
 void set_grass_model_and_draw(const myopengl::shader &light_shader_) {
-  for (size_t i = 0; i < vegetation.size(); i++) {
+  std::map<float, glm::vec3, std::greater<float>> windows;
+  for (const auto &win : vegetation) {
+    float distance = glm::length(get_camera().get_pos() - win);
+    windows[distance] = win;
+  }
+  for (const auto &win : windows) {
     auto model = glm::mat4(1.0f);
-    model = glm::translate(model, vegetation[i]);
+    model = glm::translate(model, win.second);
     light_shader_.set_uniform("model", model);
     glDrawArrays(GL_TRIANGLES, 0, 6);
   }
@@ -268,6 +277,7 @@ unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
   } else if (img.channels() == 4) {
     auto width = img.cols;
     auto height = img.rows;
+    cv::cvtColor(img, img, CV_BGRA2RGBA);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, img.data);
 
@@ -295,7 +305,8 @@ int main(/*int argc, char **argv*/) {
 
   auto cubeTexture = load_texture("../img/marble.jpg", GL_TEXTURE0);
   auto floorTexture = load_texture("../img/metal.png", GL_TEXTURE0);
-  auto grassTexture = load_texture("../img/grass.png", GL_TEXTURE0);
+  // auto grassTexture = load_texture("../img/grass.png", GL_TEXTURE0);
+  auto windowTexture = load_texture("../img/window.png", GL_TEXTURE0);
   shader_.use();
   shader_.set_uniform("texture1", 0 /*use texture unit 0*/);
   while (!glfwWindowShouldClose(window)) {
@@ -325,7 +336,7 @@ int main(/*int argc, char **argv*/) {
     set_cube_model_and_draw(shader_, 1.0f);
 
     // draw grass
-    glBindTexture(GL_TEXTURE_2D, grassTexture);
+    glBindTexture(GL_TEXTURE_2D, windowTexture);
     glBindVertexArray(VAOs[2]);
     set_grass_model_and_draw(shader_);
 
