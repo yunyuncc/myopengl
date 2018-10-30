@@ -9,6 +9,7 @@ FIND_PACKAGE(GLUT REQUIRED)
 FIND_PACKAGE(glfw3 REQUIRED)
 FIND_PACKAGE(GLEW REQUIRED)
 FIND_PACKAGE(glm REQUIRED)
+FIND_PACKAGE(assimp REQUIRED)
 FIND_PACKAGE(OpenCV 3.4 REQUIRED PATHS /opt)
 FIND_LIBRARY(freeimage_library freeimage)
 FIND_LIBRARY(freeimage_debug_library freeimage)
@@ -31,6 +32,7 @@ SET(sub_dirs
 	14-lighting-maps
 	15-light-casters 
 	16-multiple-lights
+	17-depth-testing
 	)
 FOREACH(sub_dir ${sub_dirs})
 	SET(glad_src ${CMAKE_CURRENT_LIST_DIR}/glad/src/glad.c)
@@ -47,6 +49,7 @@ FOREACH(sub_dir ${sub_dirs})
 	ENDIF()
 	TARGET_LINK_LIBRARIES(${sub_dir} PUBLIC stdc++fs)
 	TARGET_LINK_LIBRARIES(${sub_dir} PUBLIC glm)
+	TARGET_LINK_LIBRARIES(${sub_dir} PUBLIC ${assimp_LIBRARIES})
 ENDFOREACH()
 
 
