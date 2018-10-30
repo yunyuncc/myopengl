@@ -188,8 +188,7 @@ GLFWwindow *init() {
 
   glEnable(GL_DEPTH_TEST);
   // glDepthMask(GL_FALSE);//make depth buffer readonly
-  // glDepthFunc(GL_LESS);
-  glDepthFunc(GL_ALWAYS);
+  glDepthFunc(GL_LESS);
   // init user view
   glViewport(0, 0, screen_width, screen_height);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
