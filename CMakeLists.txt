@@ -34,6 +34,7 @@ SET(sub_dirs
 	16-multiple-lights
 	17-depth-testing
 	18-stencil-testing
+	19-blending
 	)
 FOREACH(sub_dir ${sub_dirs})
 	SET(glad_src ${CMAKE_CURRENT_LIST_DIR}/glad/src/glad.c)
