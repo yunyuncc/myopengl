@@ -309,13 +309,18 @@ tuple<unsigned int, unsigned int, unsigned int> setup_framebuffer() {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   return {framebuffer, texColorBuffer, rbo};
 }
-int main(/*int argc, char **argv*/) {
+int main(int argc, char **argv) {
+  if(argc != 2){
+  	cout << "usage :" << argv[0] << " screen.fs" << endl;
+	return 0;
+  }
+  std::string screen_fs_path(argv[1]);
   auto window = init();
   auto VAOs = setup_buffer();
   myopengl::shader shader_("../21-framebuffer/depth_testing.vs",
                            "../21-framebuffer/depth_testing.fs");
   myopengl::shader screen_shader("../21-framebuffer/screen.vs",
-                                 "../21-framebuffer/screen.fs");
+                                 screen_fs_path);
   // render loop
 
   auto cubeTexture = load_texture("../img/container.jpg", GL_TEXTURE0);
