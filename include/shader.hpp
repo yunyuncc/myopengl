@@ -31,8 +31,7 @@ public:
       create_shader();
 
     } catch (const std::exception &e) {
-      throw std::runtime_error(
-          std::string("got a exception when create shader:") + e.what());
+      throw_exception(std::string("got a exception when create shader:") + e.what());
     }
   }
   ~shader() {
@@ -43,14 +42,14 @@ public:
     glUseProgram(id_);
     auto error_opt = glCheckError();
     if (error_opt) {
-      throw std::runtime_error(std::string("use shader fail:") +
+      throw_exception(std::string("use shader fail:") +
                                error_opt.value());
     }
   }
   void set_uniform(const std::string &name, bool value) const {
     int loc = glGetUniformLocation(id_, name.c_str());
     if (loc == -1) {
-      throw std::runtime_error(std::string("has not uniform name:") + name);
+      throw_exception(std::string("has not uniform name:") + name);
     }
     glUniform1i(loc, (int)value);
     glCheckError();
@@ -58,7 +57,7 @@ public:
   void set_uniform(const std::string &name, int value) const {
     int loc = glGetUniformLocation(id_, name.c_str());
     if (loc == -1) {
-      throw std::runtime_error(std::string("has not uniform name:") + name);
+      throw_exception(std::string("has not uniform name:") + name);
     }
     glUniform1i(loc, value);
     glCheckError();
@@ -66,7 +65,7 @@ public:
   void set_uniform(const std::string &name, float value) const {
     int loc = glGetUniformLocation(id_, name.c_str());
     if (loc == -1) {
-      throw std::runtime_error(std::string("has not uniform name:") + name);
+      throw_exception(std::string("has not uniform name:") + name);
     }
     glUniform1f(loc, value);
     glCheckError();
@@ -74,7 +73,7 @@ public:
   void set_uniform(const std::string &name, const glm::mat4 &mat) const {
     int loc = glGetUniformLocation(id_, name.c_str());
     if (loc == -1) {
-      throw std::runtime_error(std::string("has not uniform name:") + name);
+      throw_exception(std::string("has not uniform name:") + name);
     }
     glUniformMatrix4fv(loc, 1 /*num of matrix*/, GL_FALSE /*do not transpose*/,
                        glm::value_ptr(mat));
@@ -83,7 +82,7 @@ public:
   void set_uniform(const std::string &name, const glm::vec3 &vec) const {
     int loc = glGetUniformLocation(id_, name.c_str());
     if (loc == -1) {
-      throw std::runtime_error(std::string("has not uniform name:") + name);
+      throw_exception(std::string("has not uniform name:") + name);
     }
     glUniform3fv(loc, 1, &vec[0]);
     glCheckError();
@@ -91,7 +90,7 @@ public:
   void set_uniform(const std::string &name, float x, float y, float z) const {
     int loc = glGetUniformLocation(id_, name.c_str());
     if (loc == -1) {
-      throw std::runtime_error(std::string("has not uniform name:") + name);
+      throw_exception(std::string("has not uniform name:") + name);
     }
     glUniform3f(loc, x, y, z);
     glCheckError();
@@ -113,7 +112,7 @@ private:
     if (!success) {
       glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
       std::cerr << "[" << infoLog << "]" << std::endl;
-      throw std::runtime_error(std::string("compilation vertex fail:") +
+      throw_exception(std::string("compilation vertex fail:") +
                                std::string(info));
     };
 
@@ -124,14 +123,14 @@ private:
     if (!success) {
       glGetShaderInfoLog(vertex, 512, nullptr, infoLog);
       std::cerr << "[" << infoLog << "]" << std::endl;
-      throw std::runtime_error(std::string("compilation fragment fail:") +
+      throw_exception(std::string("compilation fragment fail:") +
                                std::string(infoLog));
     };
 
     // 着色器程序
     id_ = glCreateProgram();
     if (id_ == 0) {
-      throw std::runtime_error("glCreateProgram fail");
+      throw_exception("glCreateProgram fail");
     }
 
     glAttachShader(id_, vertex);
@@ -142,7 +141,7 @@ private:
     if (!success) {
       glGetProgramInfoLog(id_, 512, nullptr, infoLog);
       std::cerr << "[" << infoLog << "]" << std::endl;
-      throw std::runtime_error(std::string("link shader fail:") +
+      throw_exception(std::string("link shader fail:") +
                                std::string(infoLog));
     }
 

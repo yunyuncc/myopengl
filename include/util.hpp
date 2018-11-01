@@ -1,4 +1,5 @@
 #pragma once
+#include "error.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -51,5 +52,4 @@ inline std::optional<std::string> glCheckError_(const char *file, int line) {
 }
 
 #define glCheckError() ::myopengl::glCheckError_(__FILE__, __LINE__)
-
 } // namespace myopengl
