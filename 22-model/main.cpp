@@ -22,8 +22,6 @@ void framebuffer_size_callback(GLFWwindow *, int width, int height) {
   glViewport(0, 0, width, height);
 }
 
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
 myopengl::camera &get_camera() {
   static glm::vec3 camera_pos(0.f, 0.f, 3.f);
   static glm::vec3 camera_up(0.f, 1.f, 0.f);
@@ -122,51 +120,14 @@ GLFWwindow *init() {
   }
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  //  glEnable(GL_BLEND);
+  // glEnable(GL_BLEND);
   // glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  //  glEnable(GL_CULL_FACE);
+  // glEnable(GL_CULL_FACE);
   // glCullFace(GL_FRONT);
   // init user view
   glViewport(0, 0, screen_width, screen_height);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   return window;
-}
-
-unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
-  unsigned int textureID;
-  glGenTextures(1, &textureID);
-  glActiveTexture(
-      texture_unit); /*active texture unit , and load img1 to that unit*/
-  glBindTexture(GL_TEXTURE_2D, textureID);
-
-  cv::Mat img = cv::imread(img_path, cv::IMREAD_UNCHANGED);
-  if (img.channels() == 3) {
-    cv::Mat img_rgb;
-    cv::cvtColor(img, img_rgb, CV_BGR2RGB);
-    auto width = img.cols;
-    auto height = img.rows;
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
-                 GL_UNSIGNED_BYTE, img_rgb.data);
-  } else if (img.channels() == 4) {
-    auto width = img.cols;
-    auto height = img.rows;
-    cv::cvtColor(img, img, CV_BGRA2RGBA);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, img.data);
-
-  } else {
-    std::runtime_error(string("img channel is " + to_string(img.channels())));
-  }
-  glGenerateMipmap(GL_TEXTURE_2D);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  if (img.channels() == 4) {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  }
-  return textureID;
 }
 
 int main(/*int argc, char **argv*/) {
