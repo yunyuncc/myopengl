@@ -38,6 +38,7 @@ SET(sub_dirs
 	20-face-culling
 	21-framebuffer
 	22-model
+	23-cubemaps
 	)
 FOREACH(sub_dir ${sub_dirs})
 	SET(glad_src ${CMAKE_CURRENT_LIST_DIR}/glad/src/glad.c)
