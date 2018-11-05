@@ -147,7 +147,6 @@ private:
     std::vector<vertex> vertices;
     std::vector<unsigned int> indices;
     std::vector<texture> textures;
-
     for (unsigned int i = 0; i < m->mNumVertices; i++) {
       vertex ver;
       glm::vec3 pos;
@@ -156,11 +155,13 @@ private:
       pos.z = m->mVertices[i].z;
       ver.position = pos;
       // 处理顶点位置、法线和纹理坐标
+      if(m->mNormals != nullptr){
       glm::vec3 normal;
       normal.x = m->mNormals[i].x;
       normal.y = m->mNormals[i].y;
       normal.z = m->mNormals[i].z;
       ver.normal = normal;
+      }
 
       if (m->mTextureCoords[0]) {
         glm::vec2 tex;
