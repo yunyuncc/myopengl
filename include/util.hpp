@@ -8,13 +8,43 @@
 #include <optional>
 #include <sstream>
 #include <string>
-
+#include <vector>
 namespace myopengl {
 inline std::string to_string(const glm::vec3 &vec) {
   std::stringstream ss;
   ss << "[" << vec.x << "," << vec.y << "," << vec.z << "]";
   return ss.str();
 }
+
+inline std::string to_string(const glm::mat4 &mat) {
+  std::stringstream ss;
+  for (size_t i = 0; i < 4; i++) {
+    char buf[500]{};
+    snprintf(buf, sizeof(buf), "|%.4f,%.4f,%.4f,%.4f|\n", mat[i][0], mat[i][1],
+             mat[i][2], mat[i][3]);
+    ss << buf;
+  }
+  return ss.str();
+}
+
+inline std::vector<std::string> split(const std::string &s, char c) {
+  std::string buff;
+  std::vector<std::string> v;
+
+  for (auto const &n : s) {
+    if (n != c) {
+      buff += n;
+    } else if (n == c && !buff.empty()) {
+      v.push_back(buff);
+      buff.clear();
+    }
+  }
+  if (!buff.empty()) {
+    v.push_back(buff);
+  }
+  return v;
+}
+
 inline std::optional<std::string> glCheckError_(const char *file, int line) {
   GLenum errorCode;
   std::string error;
