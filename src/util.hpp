@@ -1,5 +1,5 @@
 #pragma once
-#include "error.hpp"
+#include "common/error.hpp"
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -27,23 +27,6 @@ inline std::string to_string(const glm::mat4 &mat) {
   return ss.str();
 }
 
-inline std::vector<std::string> split(const std::string &s, char c) {
-  std::string buff;
-  std::vector<std::string> v;
-
-  for (auto const &n : s) {
-    if (n != c) {
-      buff += n;
-    } else if (n == c && !buff.empty()) {
-      v.push_back(buff);
-      buff.clear();
-    }
-  }
-  if (!buff.empty()) {
-    v.push_back(buff);
-  }
-  return v;
-}
 
 inline std::optional<std::string> glCheckError_(const char *file, int line) {
   GLenum errorCode;
