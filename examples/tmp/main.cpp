@@ -2,6 +2,7 @@
 #include "model.hpp"
 #include "shader.hpp"
 #include "util.hpp"
+#include "common/string.hpp"
 #include <GLFW/glfw3.h>
 #include <chrono>
 #include <cmath>
@@ -319,7 +320,7 @@ private:
     for (size_t i = 0; i < 3; i++) {
       std::string line;
       getline(fs, line);
-      auto nums = myopengl::split(line, ' ');
+      auto nums = yunyuncc::split(line, ' ');
       if (nums.size() != 4) {
         throw_exception("should be 4 but is " + std::to_string(nums.size()) +
                         p.string() + " i=" + std::to_string(i) +

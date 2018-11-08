@@ -1,4 +1,5 @@
 #include "texture_loader.hpp"
+#include "common/string.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -122,7 +123,7 @@ glm::vec3 texture_loader::get_pos_from_file(const std::filesystem::path &p) {
   for (size_t i = 0; i < 3; i++) {
     std::string line;
     getline(fs, line);
-    auto nums = myopengl::split(line, ' ');
+    auto nums = yunyuncc::split(line, ' ');
     if (nums.size() != 4) {
       throw_exception("should be 4 but is " + std::to_string(nums.size()) +
                       p.string() + " i=" + std::to_string(i) + " line:" + line);
