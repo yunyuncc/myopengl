@@ -24,7 +24,9 @@ TARGET_LINK_LIBRARIES(myopengl PUBLIC optimized ${freeimage_library})
 TARGET_LINK_LIBRARIES(myopengl PUBLIC stdc++fs)
 TARGET_LINK_LIBRARIES(myopengl PUBLIC glm)
 TARGET_LINK_LIBRARIES(myopengl PUBLIC ${ASSIMP_LIBRARIES})
-
+message("before")
+add_subdirectory(test)
+message("after")
 SET(sub_dirs 
 	01-hello-window 
 	02-hello-triangle 
@@ -59,6 +61,5 @@ FOREACH(sub_dir ${sub_dirs})
 	TARGET_LINK_LIBRARIES(${sub_dir} PRIVATE myopengl)
 
 ENDFOREACH()
-
 
 
