@@ -317,9 +317,9 @@ int main(int argc, char **argv) {
   std::string screen_fs_path(argv[1]);
   auto window = init();
   auto VAOs = setup_buffer();
-  myopengl::shader shader_("../21-framebuffer/depth_testing.vs",
-                           "../21-framebuffer/depth_testing.fs");
-  myopengl::shader screen_shader("../21-framebuffer/screen.vs",
+  myopengl::shader shader_("../examples/21-framebuffer/depth_testing.vs",
+                           "../examples/21-framebuffer/depth_testing.fs");
+  myopengl::shader screen_shader("../examples/21-framebuffer/screen.vs",
                                  screen_fs_path);
   // render loop
 

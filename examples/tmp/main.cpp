@@ -343,9 +343,9 @@ void test() {}
 int main(/*int argc, char **argv*/) {
   test();
   auto window = init();
-  myopengl::shader model_shader_("../tmp/model_loading.vs",
-                                 "../tmp/model_loading.fs");
-  myopengl::shader sky_shader_("../tmp/cubemaps.vs", "../tmp/cubemaps.fs");
+  myopengl::shader model_shader_("../examples/tmp/model_loading.vs",
+                                 "../examples/tmp/model_loading.fs");
+  myopengl::shader sky_shader_("../examples/tmp/cubemaps.vs", "../examples/tmp/cubemaps.fs");
   // myopengl::model
   // m("/home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy/matterport_mesh/bed1a77d92d64f5cbbaaae4feed64ec1/bed1a77d92d64f5cbbaaae4feed64ec1.obj");
   // render loop

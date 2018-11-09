@@ -320,8 +320,8 @@ unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
 int main(/*int argc, char **argv*/) {
   auto window = init();
   auto VAOs = setup_buffer();
-  myopengl::shader shader_("../20-face-culling/depth_testing.vs",
-                           "../20-face-culling/depth_testing.fs");
+  myopengl::shader shader_("../examples/20-face-culling/depth_testing.vs",
+                           "../examples/20-face-culling/depth_testing.fs");
   // render loop
 
   auto cubeTexture = load_texture("../img/marble.jpg", GL_TEXTURE0);

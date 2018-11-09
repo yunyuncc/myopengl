@@ -229,10 +229,10 @@ int main(/*int argc, char **argv*/) {
   auto VAOs = setup_buffer();
   // setup_texture(texture_path, texture_path2);
 
-  myopengl::shader lightingShader("../12-basic-lighting/2.2.basic_lighting.vs",
-                                  "../12-basic-lighting/2.2.basic_lighting.fs");
-  myopengl::shader lampShader("../12-basic-lighting/2.2.lamp.vs",
-                              "../12-basic-lighting/2.2.lamp.fs");
+  myopengl::shader lightingShader("../examples/12-basic-lighting/2.2.basic_lighting.vs",
+                                  "../examples/12-basic-lighting/2.2.basic_lighting.fs");
+  myopengl::shader lampShader("../examples/12-basic-lighting/2.2.lamp.vs",
+                              "../examples/12-basic-lighting/2.2.lamp.fs");
   // lamp_shader.use();
   // render loop
   while (!glfwWindowShouldClose(window)) {

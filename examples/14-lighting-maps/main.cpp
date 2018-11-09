@@ -270,10 +270,10 @@ int main(/*int argc, char **argv*/) {
   auto VAOs = setup_buffer();
   // setup_texture(texture_path, texture_path2);
 
-  myopengl::shader lightingShader("../14-lighting-maps/basic_lighting.vs",
-                                  "../14-lighting-maps/basic_lighting.fs");
-  myopengl::shader lampShader("../14-lighting-maps/lamp.vs",
-                              "../14-lighting-maps/lamp.fs");
+  myopengl::shader lightingShader("../examples/14-lighting-maps/basic_lighting.vs",
+                                  "../examples/14-lighting-maps/basic_lighting.fs");
+  myopengl::shader lampShader("../examples/14-lighting-maps/lamp.vs",
+                              "../examples/14-lighting-maps/lamp.fs");
   // lamp_shader.use();
   // render loop
   load_texture("../img/container2.png", GL_TEXTURE0);

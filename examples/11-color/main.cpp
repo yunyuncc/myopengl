@@ -194,10 +194,10 @@ int main(/*int argc, char **argv*/) {
   auto VAOs = setup_buffer();
   // setup_texture(texture_path, texture_path2);
 
-  myopengl::shader lighting_shader("../11-color/vertex.GLSL",
-                                   "../11-color/light_fragment.GLSL");
-  myopengl::shader cube_shader("../11-color/vertex.GLSL",
-                               "../11-color/fragment.GLSL");
+  myopengl::shader lighting_shader("../examples/11-color/vertex.GLSL",
+                                   "../examples/11-color/light_fragment.GLSL");
+  myopengl::shader cube_shader("../examples/11-color/vertex.GLSL",
+                               "../examples/11-color/fragment.GLSL");
   // lamp_shader.use();
   // render loop
   while (!glfwWindowShouldClose(window)) {

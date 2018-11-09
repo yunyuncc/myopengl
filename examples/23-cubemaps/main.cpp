@@ -234,10 +234,10 @@ unsigned int setup_skybuffer(){
 }
 int main(/*int argc, char **argv*/) {
   auto window = init();
-  myopengl::shader model_shader_("../23-cubemaps/model_loading.vs",
-                           "../23-cubemaps/model_loading.fs");
-  myopengl::shader sky_shader_("../23-cubemaps/cubemaps.vs",
-                           "../23-cubemaps/cubemaps.fs");
+  myopengl::shader model_shader_("../examples/23-cubemaps/model_loading.vs",
+                           "../examples/23-cubemaps/model_loading.fs");
+  myopengl::shader sky_shader_("../examples/23-cubemaps/cubemaps.vs",
+                           "../examples/23-cubemaps/cubemaps.fs");
   myopengl::model m("../res/nanosuit/nanosuit.obj");
   // render loop
   auto sky_vao = setup_skybuffer();

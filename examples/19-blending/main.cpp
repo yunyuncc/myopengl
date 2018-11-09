@@ -299,8 +299,8 @@ unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
 int main(/*int argc, char **argv*/) {
   auto window = init();
   auto VAOs = setup_buffer();
-  myopengl::shader shader_("../19-blending/depth_testing.vs",
-                           "../19-blending/depth_testing.fs");
+  myopengl::shader shader_("../examples/19-blending/depth_testing.vs",
+                           "../examples/19-blending/depth_testing.fs");
   // render loop
 
   auto cubeTexture = load_texture("../img/marble.jpg", GL_TEXTURE0);

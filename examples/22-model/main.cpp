@@ -132,8 +132,8 @@ GLFWwindow *init() {
 
 int main(/*int argc, char **argv*/) {
   auto window = init();
-  myopengl::shader shader_("../22-model/model_loading.vs",
-                           "../22-model/model_loading.fs");
+  myopengl::shader shader_("../examples/22-model/model_loading.vs",
+                           "../examples/22-model/model_loading.fs");
   myopengl::model m("../res/nanosuit/nanosuit.obj");
   // render loop
 

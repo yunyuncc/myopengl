@@ -257,10 +257,10 @@ unsigned int load_texture(const std::string &img_path, GLenum texture_unit) {
 int main(/*int argc, char **argv*/) {
   auto window = init();
   auto VAOs = setup_buffer();
-  myopengl::shader lightingShader("../15-light-casters/basic_lighting.vs",
-                                  "../15-light-casters/basic_lighting.fs");
-  myopengl::shader lampShader("../15-light-casters/lamp.vs",
-                              "../15-light-casters/lamp.fs");
+  myopengl::shader lightingShader("../examples/15-light-casters/basic_lighting.vs",
+                                  "../examples/15-light-casters/basic_lighting.fs");
+  myopengl::shader lampShader("../examples/15-light-casters/lamp.vs",
+                              "../examples/15-light-casters/lamp.fs");
   // render loop
   load_texture("../img/container2.png", GL_TEXTURE0);
   load_texture("../img/container2_specular.png", GL_TEXTURE1);
