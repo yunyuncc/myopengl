@@ -192,8 +192,6 @@ void draw_skybox(const myopengl::shader &sky_shader_, unsigned int sky_texture,
 
 int main(/*int argc, char **argv*/) {
   auto window = init();
-  myopengl::shader model_shader_("../examples/tmp/model_loading.vs",
-                                 "../examples/tmp/model_loading.fs");
   myopengl::shader sky_shader_("../examples/tmp/cubemaps.vs", "../examples/tmp/cubemaps.fs");
   auto sky_vao = setup_skybuffer();
   texture_loader loader("/home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy");
@@ -204,9 +202,6 @@ int main(/*int argc, char **argv*/) {
     lastFrame = currentFrame;
 
     processInput(window);
-
-    // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-    auto pos = get_camera().get_pos();
 
     draw_skybox(sky_shader_, sky_texture, sky_vao);
 
