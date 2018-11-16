@@ -1,6 +1,7 @@
 #include "camera.hpp"
 #include "model.hpp"
 #include "shader.hpp"
+#include "texture_loader.hpp"
 #include "util.hpp"
 #include "common/string.hpp"
 #include <GLFW/glfw3.h>
@@ -188,176 +189,15 @@ void draw_skybox(const myopengl::shader &sky_shader_, unsigned int sky_texture,
   glDrawArrays(GL_TRIANGLES, 0, 36);
   glDepthFunc(GL_LESS); // set depth function back to default
 }
-struct vec3_hash {
-  size_t operator()(const glm::vec3 &vec) const {
-    std::hash<std::string> h;
-    return h(myopengl::to_string(vec));
-  }
-};
-class texture_loader {
-public:
-  explicit texture_loader(const std::filesystem::path &root_path) {
-    auto skybox_images_dir = root_path / "matterport_skybox_images";
-    auto camera_poses_dir = root_path / "matterport_camera_poses";
-    if (!std::filesystem::exists(root_path)) {
-      throw_exception(root_path.string() + " not exists");
-    }
-    load_poses(camera_poses_dir);
-    load_skybox_texture(skybox_images_dir);
-  }
-  unsigned int get_texture_from_postion(const glm::vec3 &pos) {
-    vector<float> distances;
-    for (const auto &p : all_poses_) {
-      float dis = glm::distance(p, pos);
-      distances.push_back(dis);
-    }
-    auto it = min_element(distances.begin(), distances.end());
-    size_t idx = it - distances.begin();
-    glm::vec3 nearest = all_poses_[idx];
-    cout << "cur pos :" << myopengl::to_string(pos)
-         << "  nearest:" << myopengl::to_string(nearest) << endl;
-    std::string hash = pos_hash_[nearest];
-    if (hash_texture_.count(hash) == 0) {
-      throw_exception("hash :" + hash + " not has texture");
-    }
-    return hash_texture_[hash];
-  }
-
-private:
-  void load_poses(const std::filesystem::path &dir) {
-    if (!std::filesystem::exists(dir)) {
-      throw_exception(dir.string() + " not exists");
-    }
-    for (const auto &f : std::filesystem::directory_iterator(dir)) {
-      std::filesystem::path full_path = f;
-      auto f_name = full_path.filename().string();
-      // TODO check end_with .txt
-      auto hash = f_name.substr(0, f_name.find_first_of("_"));
-      glm::vec3 pos = get_pos_from_file(full_path);
-      all_poses_.push_back(pos);
-      pos_hash_[pos] = hash;
-    }
-    cout << "all_poses size = " << all_poses_.size()
-         << "  pos_hash size = " << pos_hash_.size() << endl;
-  }
-  void load_skybox_texture(const std::filesystem::path &dir) {
-    if (!std::filesystem::exists(dir)) {
-      throw_exception(dir.string() + " not exists");
-    }
-    std::set<std::string> hashes;
-    for (const auto &f : std::filesystem::directory_iterator(dir)) {
-      std::filesystem::path full_path = f;
-      auto f_name = full_path.filename().string();
-      // TODO check end_with .txt
-      auto hash = f_name.substr(0, f_name.find_first_of("_"));
-      hashes.insert(hash);
-    }
-    for (auto &h : hashes) {
-      auto faces = get_cube_faces(dir.string(), h);
-      unsigned int texture_id = load_cubemap(faces);
-      hash_texture_[h] = texture_id;
-    }
-    cout << "has_texture_ size = " << hash_texture_.size() << endl;
-  }
-  std::vector<std::string> get_cube_faces(const std::string &path,
-                                          const std::string &hash) {
-    // /home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy/matterport_skybox_images
-    // 0f37bd0737e349de9d536263a4bdd60d_skybox1_sami.jpg
-    std::vector<std::string> faces;
-    std::string pre = path + "/";
-    for (size_t i = 0; i < 6; i++) {
-      std::string name =
-          pre + hash + "_skybox" + std::to_string(i) + "_sami.jpg";
-      faces.push_back(name);
-    }
-    std::vector<std::string> order_faces{
-        faces[2], // right
-        faces[4], // left
-        faces[0], // top
-        faces[5], // bottom
-        faces[1], // front
-        faces[3]  // back
-    };
-    return order_faces;
-  }
-
-  unsigned int load_cubemap(const std::vector<std::string> &faces) {
-    unsigned int textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-    for (size_t i = 0; i < faces.size(); i++) {
-      if (!std::filesystem::exists(faces[i])) {
-        throw_exception("file " + faces[i] + " not exists");
-      }
-      cv::Mat img = cv::imread(faces[i], cv::IMREAD_UNCHANGED);
-      auto width = img.cols;
-      auto height = img.rows;
-      auto channels = img.channels();
-      if (channels != 3) {
-        throw_exception("img channel should be 3, but is " +
-                        std::to_string(channels));
-      }
-      cv::cvtColor(img, img, CV_BGR2RGB);
-      glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height,
-                   0, GL_RGB, GL_UNSIGNED_BYTE, img.data);
-    }
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-    return textureID;
-  }
-
-  glm::vec3 get_pos_from_file(const std::filesystem::path &p) {
-    std::fstream fs(p);
-    if (!fs.is_open()) {
-      throw_exception("open " + p.string() + " fail");
-    }
-    glm::vec3 pos;
-    for (size_t i = 0; i < 3; i++) {
-      std::string line;
-      getline(fs, line);
-      auto nums = yunyuncc::split(line, ' ');
-      if (nums.size() != 4) {
-        throw_exception("should be 4 but is " + std::to_string(nums.size()) +
-                        p.string() + " i=" + std::to_string(i) +
-                        " line:" + line);
-      }
-      std::string last = nums.back();
-      float num = std::stof(last);
-      pos[i] = num;
-    }
-    return pos;
-  }
-
-  std::vector<glm::vec3> all_poses_;
-  std::unordered_map<glm::vec3, std::string, vec3_hash> pos_hash_;
-  std::map<std::string, unsigned int> hash_texture_;
-};
-
-void test() {}
 
 int main(/*int argc, char **argv*/) {
-  test();
   auto window = init();
   myopengl::shader model_shader_("../examples/tmp/model_loading.vs",
                                  "../examples/tmp/model_loading.fs");
   myopengl::shader sky_shader_("../examples/tmp/cubemaps.vs", "../examples/tmp/cubemaps.fs");
-  // myopengl::model
-  // m("/home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy/matterport_mesh/bed1a77d92d64f5cbbaaae4feed64ec1/bed1a77d92d64f5cbbaaae4feed64ec1.obj");
-  // render loop
   auto sky_vao = setup_skybuffer();
   texture_loader loader("/home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy");
-  //  auto sky_texture1 = load_cubemap(get_cube_faces(
-  //			  "/home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy/matterport_skybox_images",
-  //			  "30c97842da204e6290ac32904c924e17"));
-  //  auto sky_texture2 = load_cubemap(get_cube_faces(
-  //			  "/home/wyy/Downloads/3d/17DRP5sb8fy/17DRP5sb8fy/matterport_skybox_images",
-  //			  "77a1a11978b04e9cbf74914c98578ab8"));
-  //  auto sky_texture = load_cubemap(cube_faces);
-
+  auto sky_texture = loader.get_texture_by_hash("28db29e8c72c4a68bfdf5bb2b454443d");
   while (!glfwWindowShouldClose(window)) {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
@@ -367,7 +207,6 @@ int main(/*int argc, char **argv*/) {
 
     // glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     auto pos = get_camera().get_pos();
-    unsigned int sky_texture = loader.get_texture_from_postion(pos);
 
     draw_skybox(sky_shader_, sky_texture, sky_vao);
 
