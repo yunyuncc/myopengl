@@ -51,6 +51,10 @@ public:
 	}
 	return poses[0];
   }
+
+  unsigned int get_texture_by_hash(const std::string& hash){
+	  return hash_texture_[hash];
+  }
 private:
   void load_poses(const std::filesystem::path &dir);
 

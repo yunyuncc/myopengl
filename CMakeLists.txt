@@ -26,29 +26,30 @@ TARGET_LINK_LIBRARIES(myopengl PUBLIC glm)
 TARGET_LINK_LIBRARIES(myopengl PUBLIC ${ASSIMP_LIBRARIES})
 add_subdirectory(test)
 SET(sub_dirs 
-	01-hello-window 
-	02-hello-triangle 
-	03-shaders 
-	04-shaders 
-	05-shaders 
-	06-textures 
-	07-transformations 
-	08-coordinate-systems 
-	09-camera 
-	10-camera-class 
-	11-color 
-	12-basic-lighting 
-	13-materials
-	14-lighting-maps
-	15-light-casters 
-	16-multiple-lights
-	17-depth-testing
-	18-stencil-testing
-	19-blending
-	20-face-culling
-	21-framebuffer
-	22-model
-	23-cubemaps
+	#01-hello-window 
+	#02-hello-triangle 
+	#03-shaders 
+	#04-shaders 
+	#05-shaders 
+	#06-textures 
+	#07-transformations 
+	#08-coordinate-systems 
+	#09-camera 
+	#10-camera-class 
+	#11-color 
+	#12-basic-lighting 
+	#13-materials
+	#14-lighting-maps
+	#15-light-casters 
+	#16-multiple-lights
+	#17-depth-testing
+	#18-stencil-testing
+	#19-blending
+	#20-face-culling
+	#21-framebuffer
+	#22-model
+	#23-cubemaps
+	#24-advanced_GLSL
 	tmp
 	)
 FOREACH(sub_dir ${sub_dirs})

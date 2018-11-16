@@ -1,4 +1,6 @@
 #include "opengl_app.hpp"
+#include <iostream>
+using namespace std;
 namespace {
 
 float g_last_x = 400;
@@ -31,12 +33,12 @@ void opengl_app::process_input(GLFWwindow *window) {
     get_camera().deal_keyboard(myopengl::camera::move::left, delta_time_);
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     get_camera().deal_keyboard(myopengl::camera::move::right, delta_time_);
-  // if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
-  //  cout << "pos:" << myopengl::to_string(get_camera().get_pos())
-  //       << " yaw:" << get_camera().get_yaw()
-  //       << " pitch:" << get_camera().get_pitch()
-  //       << "  front:" << myopengl::to_string(get_camera().get_front()) <<
-  //       endl;
+  if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+   cout << "pos:" << myopengl::to_string(get_camera().get_pos())
+        << " yaw:" << get_camera().get_yaw()
+        << " pitch:" << get_camera().get_pitch()
+        << "  front:" << myopengl::to_string(get_camera().get_front()) <<
+        endl;
 }
 
 void opengl_app::run() {

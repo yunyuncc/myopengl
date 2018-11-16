@@ -69,8 +69,10 @@ texture_loader::get_cube_faces(const std::string &path,
   // 0f37bd0737e349de9d536263a4bdd60d_skybox1_sami.jpg
   std::vector<std::string> faces;
   std::string pre = path + "/";
+  cout << " hash :" << hash << endl;
   for (size_t i = 0; i < 6; i++) {
     std::string name = pre + hash + "_skybox" + std::to_string(i) + "_sami.jpg";
+    cout << "name:" << name << endl;
     faces.push_back(name);
   }
   std::vector<std::string> order_faces{

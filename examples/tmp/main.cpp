@@ -118,8 +118,7 @@ void update_camera_view(const myopengl::shader &shader_) {
   shader_.set_uniform("view", view);
 }
 void update_sky_view(const myopengl::shader &shader_) {
-  //  glm::mat4 view = glm::mat4(glm::mat3(get_camera().get_view()));
-  glm::mat4 view = get_camera().get_view();
+  glm::mat4 view = glm::mat4(glm::mat3(get_camera().get_view()));
   shader_.set_uniform("view", view);
 }
 
