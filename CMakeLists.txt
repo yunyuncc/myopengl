@@ -47,9 +47,9 @@ SET(sub_dirs
 	#19-blending
 	#20-face-culling
 	#21-framebuffer
-	#22-model
-	#23-cubemaps
-	#24-advanced_GLSL
+	22-model
+	23-cubemaps
+	24-advanced_GLSL
 	tmp
 	)
 FOREACH(sub_dir ${sub_dirs})
